@@ -1,0 +1,153 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>reveal.js</title>
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/sky.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section>
+            <h2>Spring Boot 2 w/ Kotlin</h2>
+            <p>Mike Poirier</p>
+        </section>
+        <section>
+            <h2>What's new in Spring Boot 2?</h2>
+            <ul>
+                <li class="fragment fade-up">
+                    <span>Spring MVC 5</span>
+                    <ul>
+                        <li class="fragment fade-up">Functional Programming (with Kotlin)</li>
+                        <li class="fragment fade-up">Reactive Web Framework</li>
+                        <li class="fragment fade-up">JUnit 5 Support</li>
+                        <li class="fragment fade-up">Java 9 Support</li>
+                    </ul>
+                </li>
+                <li class="fragment fade-up">Jetty</li>
+            </ul>
+        </section>
+        <section>
+            <section>
+                <h2>Functional Spring</h2>
+            </section>
+            <section>
+                <h2>Routes</h2>
+                <pre><code data-trim data-noescape>
+                    @Configuration
+                    class Routes(val testHandler: TestHandler) {
+
+                        @Bean
+                        fun apiRoutes() = router {
+                            accept(MediaType.APPLICATION_JSON).nest {
+                                "/encode".nest {
+                                    PUT("/", testHandler::handleEncode)
+                                }
+                                "/decode".nest {
+                                    PUT("/", testHandler::handleDecode)
+                                }
+                            }
+                        }
+                    }
+                </code></pre>
+            </section>
+            <section>
+                <h2>Bean Declarations</h2>
+                <pre><code data-trim data-noescape>
+                    beans {
+                        bean&ltSomeBean&gt()
+                        bean {
+                            AnotherBean(param1, param2)
+                        }
+                        bean("named") {
+                            BeanWithName()
+                        }
+                        profile("someProfile") {
+                            bean&ltBeanForSomeProfile&gt()
+                        }
+                    }
+                </code></pre>
+                <p>NOTE: Not implemented in Spring Boot 2 yet.</p>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2>Reactive Spring</h2>
+                <p>Powered by <a href="http://projectreactor.io/" target="_blank">Project Reactor</a></p>
+            </section>
+            <section>
+                <h3>Reactive Handler - Mono</h3>
+                <pre><code data-trim data-noescape>
+                    fun ServerResponse.BodyBuilder.text() =
+                        contentType(MediaType.TEXT_PLAIN)
+
+                    fun monoHandler(req: ServerRequest): Mono&ltServerResponse&gt {
+                        val greetingMono = Mono.just(req.pathVariable("name"))
+                            .map { "Hello, $it!" }
+
+                        return ServerResponse.ok().text().body(greetingMono)
+                    }
+                </code></pre>
+            </section>
+            <section>
+                <h3>Reactive Handler - Flux</h3>
+                <pre><code data-trim data-noescape>
+                    data class Item(val id: Int, val name: String)
+
+                    fun ServerResponse.BodyBuilder.jsonStream() =
+                        contentType(MediaType.APPLICATION_STREAM_JSON)
+
+                    fun fluxHandler(req: ServerRequest): Mono&ltServerResponse&gt {
+                        val flux = Flux.fromIterable(1..10)
+                            .doOnNext { println("Creating item with id: $it") }
+                            .map { Item(it, "Item $it") }
+
+                        return ServerResponse.ok().jsonStream().body(flux)
+                    }
+                </code></pre>
+            </section>
+        </section>
+    </div>
+</div>
+
+<script src="lib/js/head.min.js"></script>
+<script src="js/reveal.js"></script>
+
+<script>
+  // More info about config & dependencies:
+  // - https://github.com/hakimel/reveal.js#configuration
+  // - https://github.com/hakimel/reveal.js#dependencies
+  Reveal.initialize({
+    parallaxBackgroundImage: 'https://d2v9y0dukr6mq2.cloudfront.net/video/thumbnail/xCCDBUa/technology-or-bio-molecular-structure-with-space-for-text-4k-looped-animation-presentation-background_voflj4vnl__F0000.png',
+    parallaxBackgroundSize: '2100px 900px',
+    dependencies: [
+      {src: 'plugin/markdown/marked.js'},
+      {src: 'plugin/markdown/markdown.js'},
+      {src: 'plugin/notes/notes.js', async: true},
+      { src: 'plugin/zoom-js/zoom.js', async: true },
+      {
+        src: 'plugin/highlight/highlight.js', async: true, callback: function () {
+        hljs.initHighlightingOnLoad();
+      }
+      }
+    ]
+  });
+</script>
+</body>
+</html>
